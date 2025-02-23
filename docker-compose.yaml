@@ -1,0 +1,49 @@
+services:
+  api-gateway:
+    image: api-gateway:latest
+    container_name: api-gateway
+    depends_on:
+      - user-service
+    ports:
+      - "8083:8080"
+    networks:
+      - microservices
+    environment:
+      GRPC_USER_SERVICE_HOST: "user-service"
+      GRPC_USER_SERVICE_PORT: "50051"
+
+  user-service:
+    image: user-service:latest
+    container_name: user-service
+    depends_on:
+      - db
+    ports:
+      - "50051:50051"
+    networks:
+      - microservices
+    environment:
+      USER_SERVICE_DB_URL: "jdbc:postgresql://my-doguments-db:5432/user_service"
+      USER_SERVICE_DB_USER: "user-service"
+      USER_SERVICE_DB_PASSWORD: "secret-user-service-pass"
+
+  db:
+    image: postgres:latest
+    container_name: my-doguments-db
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: user-service
+      POSTGRES_PASSWORD: "secret-user-service-pass"
+      POSTGRES_DB: user_service
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - microservices
+
+networks:
+  microservices:
+    driver: bridge
+
+volumes:
+  pgdata:

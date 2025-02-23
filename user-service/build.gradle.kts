@@ -1,8 +1,7 @@
 import com.google.protobuf.gradle.id
 
 plugins {
-    kotlin("jvm")
-    id("io.ktor.plugin")
+    kotlin("jvm") version "2.0.20"
     application
     id("com.google.cloud.tools.jib")
     id("com.google.protobuf")
@@ -16,13 +15,20 @@ application {
 }
 
 dependencies {
-    // --- Ktor ---
-    implementation("io.ktor:ktor-server-core:2.3.0")
-    implementation("io.ktor:ktor-server-netty:2.3.0")
-    implementation("io.ktor:ktor-server-auth:2.3.0")
-    implementation("io.ktor:ktor-server-auth-jwt:2.3.0")
-    implementation("io.ktor:ktor-server-content-negotiation:2.3.0")
-    implementation("io.ktor:ktor-serialization-gson:2.3.0")
+    // HikariCP для создания DataSource
+    implementation("com.zaxxer:HikariCP:5.0.1")
+
+    // ---Flyway---
+    implementation("org.flywaydb:flyway-core:9.16.0")
+
+    // --- Exposed ---
+    implementation("org.jetbrains.exposed:exposed-core:0.41.1")
+    implementation("org.jetbrains.exposed:exposed-dao:0.41.1")
+    implementation("org.jetbrains.exposed:exposed-jdbc:0.41.1")
+
+    implementation("org.jetbrains.exposed:exposed-java-time:0.41.1")
+
+    implementation("org.postgresql:postgresql:42.5.4")
 
     // --- Koin ---
     implementation("io.insert-koin:koin-ktor:3.4.3")
@@ -39,7 +45,6 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.4.5")
 
     // --- Тестирование ---
-    testImplementation("io.ktor:ktor-server-tests:2.3.0")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:2.0.20")
 }
 
@@ -48,11 +53,11 @@ jib {
         image = "openjdk:17-jdk-slim"
     }
     to {
-        image = "api-gateway:latest"
+        image = "user-service:latest"
     }
     container {
         mainClass = "com.doguments.my.ApplicationKt"
-        ports = listOf("8080")
+        ports = listOf("50051")
     }
 }
 
@@ -78,3 +83,9 @@ protobuf {
     }
 }
 
+tasks.test {
+    useJUnitPlatform()
+}
+kotlin {
+    jvmToolchain(17)
+}

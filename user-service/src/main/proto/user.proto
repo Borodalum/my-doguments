@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package user;
+
+option java_multiple_files = true;
+option java_package = "com.doguments.my.service.user";
+option java_outer_classname = "UserProto";
+
+service UserManagementService {
+  // RPC для регистрации пользователя
+  rpc RegisterUser (RegisterUserRequest) returns (RegisterUserResponse);
+  // RPC для логина
+  rpc LoginUser (LoginUserRequest) returns (LoginUserResponse);
+  // RPC для getById
+  rpc GetByIdUser (GetByIdUserRequest) returns (GetByIdUserResponse);
+}
+
+message RegisterUserRequest {
+  string login = 1;
+  string email = 2;
+  string password = 3;
+}
+
+message RegisterUserResponse {
+  bool success = 1;
+  int64 id = 2;
+  string message = 3;
+}
+
+message LoginUserRequest {
+  string login = 1;
+  string password = 2;
+}
+
+message LoginUserResponse {
+  bool success = 1;
+  int64 id = 2;
+  string login = 3;
+  string email = 4;
+  string message = 5;
+}
+
+message GetByIdUserRequest {
+  int64 id = 1;
+}
+
+message GetByIdUserResponse {
+  bool success = 1;
+  int64 id = 2;
+  string login = 3;
+  string email = 4;
+}
