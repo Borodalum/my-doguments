@@ -7,7 +7,7 @@ data class RegisterResult(
 
 data class LoginResult(
     val success: Boolean,
-    val message: String,
+    val user: User?,
 )
 
 data class GetByIdResult(

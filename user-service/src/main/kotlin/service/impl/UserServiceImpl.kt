@@ -31,19 +31,18 @@ class UserServiceImpl : UserService {
         try {
             val user = userRepository.getByLogin(login)
             return@runBlocking if (user.password == password) {
-                LoginResult(true, "User singed in.")
+                LoginResult(true, user)
             } else {
-                LoginResult(false, "User login or password is incorrect.")
+                LoginResult(false, null)
             }
         } catch (e: Exception) {
-            return@runBlocking LoginResult(false, "User login or password is incorrect.")
+            return@runBlocking LoginResult(false, null)
         }
     }
 
     override fun getById(id: Long): GetByIdResult = runBlocking {
         try {
             val user = userRepository.getById(id)
-            println("user $user")
             return@runBlocking GetByIdResult(true, user)
         } catch (e: Exception) {
             println(e.message)

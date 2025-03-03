@@ -1,6 +1,9 @@
 package com.doguments.my.service.impl
 
+import com.doguments.my.exception.LoginFailedException
+import com.doguments.my.exception.UserInformationInvalidException
 import com.doguments.my.model.User
+import com.doguments.my.service.JWTService
 import com.doguments.my.service.UserService
 import com.doguments.my.service.user.GetByIdUserRequest
 import com.doguments.my.service.user.GetByIdUserResponse
@@ -8,16 +11,17 @@ import com.doguments.my.service.user.LoginUserRequest
 import com.doguments.my.service.user.LoginUserResponse
 import com.doguments.my.service.user.RegisterUserRequest
 import com.doguments.my.service.user.UserManagementServiceGrpcKt
-import io.grpc.ManagedChannel
 import kotlinx.coroutines.runBlocking
+import org.koin.core.component.inject
+import kotlin.time.Duration.Companion.minutes
 
-class UserServiceImpl(
-    channel: ManagedChannel,
-) : UserService {
+class UserServiceImpl: UserService {
 
-    private val stub = UserManagementServiceGrpcKt.UserManagementServiceCoroutineStub(channel)
+    private val jwtService by inject<JWTService>()
 
-    override fun register(login: String, email: String, password: String): String = runBlocking {
+    private val stub by inject<UserManagementServiceGrpcKt.UserManagementServiceCoroutineStub>()
+
+    override fun register(login: String, email: String, password: String): Unit = runBlocking {
         val request = RegisterUserRequest.newBuilder()
             .setLogin(login)
             .setEmail(email)
@@ -25,15 +29,12 @@ class UserServiceImpl(
             .build()
 
         val response = stub.registerUser(request)
-
-        return@runBlocking if (response.success) {
-            "Registration successful: ${response.message}"
-        } else {
-            "Registration failed: ${response.message}"
+        if (!response.success) {
+            throw UserInformationInvalidException
         }
     }
 
-    override fun login(login: String, password: String, token: (User) -> String): String = runBlocking {
+    override fun login(login: String, password: String): String = runBlocking {
         val request = LoginUserRequest.newBuilder()
             .setLogin(login)
             .setPassword(password)
@@ -42,10 +43,9 @@ class UserServiceImpl(
         val response = stub.loginUser(request)
         val user = response.toUser()
         return@runBlocking if (response.success) {
-            println(user.id)
-            token(user)
+            jwtService.generateJwtToken(user.id, 15.minutes)
         } else {
-            "Login failed: ${response.message}"
+            throw LoginFailedException
         }
     }
 

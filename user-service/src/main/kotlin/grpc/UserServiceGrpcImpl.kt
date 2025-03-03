@@ -24,10 +24,15 @@ class UserServiceGrpcImpl : KoinComponent, UserManagementServiceGrpcKt.UserManag
     }
 
     override suspend fun loginUser(request: LoginUserRequest): LoginUserResponse {
-        val (success, message) = userService.login(request.login, request.password)
+        val (success, user) = userService.login(request.login, request.password)
+
+        user ?: return LoginUserResponse.newBuilder().build()
+
         return LoginUserResponse.newBuilder()
             .setSuccess(success)
-            .setMessage(message)
+            .setId(user.id)
+            .setLogin(user.login)
+            .setEmail(user.email)
             .build()
     }
 
